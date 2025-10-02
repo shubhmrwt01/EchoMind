@@ -4,6 +4,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabNavigator from "./TabNavigator";
 import LoginScreen from "../Login";
 import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/clerk-expo";
+import AIChatBot from "../components/AIChatBot";
+import NewMeetings from "../components/NewMeetings";
+import PasteTranscript from "../components/PasteTranscript";
+import HomeScreen from "../screens/HomeScreen";
 
 // 🔐 Token cache setup
 const tokenCache = {
@@ -40,7 +44,20 @@ function Navigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isSignedIn ? (
-        <Stack.Screen name="Tabs" component={TabNavigator} />
+        <>
+          <Stack.Screen name="Tabs" component={TabNavigator} />
+          <Stack.Screen name="ChatBot" component={AIChatBot} />
+          <Stack.Screen
+            options={{
+              headerShown: true,
+              headerTitle: "New Meeting",
+              headerTitleAlign: "center",
+            }}
+            name="NewMeetings"
+            component={NewMeetings}
+          />
+          <Stack.Screen name="PasteTranscript" component={PasteTranscript}/>
+        </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}

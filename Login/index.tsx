@@ -1,53 +1,35 @@
+import React, { useEffect, useRef, useCallback } from "react";
 import {
+  View,
+  Text,
   Image,
   Pressable,
   StyleSheet,
-  Text,
-  View,
   Animated,
-  Dimensions,
   StatusBar,
 } from "react-native";
-import React, { useCallback, useEffect, useRef } from "react";
-import { useOAuth } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
+import { useOAuth } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
-
-const { width, height } = Dimensions.get("window");
+import { useRouter } from "expo-router";
 
 // Warm up browser for smoother OAuth flow
-export const useWarmUpBrowser = () => {
-  React.useEffect(() => {
-    void WebBrowser.warmUpAsync();
+const useWarmUpBrowser = () => {
+  useEffect(() => {
+    WebBrowser.warmUpAsync();
     return () => {
-      void WebBrowser.coolDownAsync();
+      WebBrowser.coolDownAsync();
     };
   }, []);
 };
 
 export default function LoginScreen() {
-  useWarmUpBrowser();
   const navigation = useNavigation();
+  const router = useRouter();
+  useWarmUpBrowser();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
-
-  const onPress = useCallback(async () => {
-    try {
-      const { createdSessionId, setActive } = await startOAuthFlow({
-        redirectUrl: Linking.createURL("/screens/HomeScreen", { scheme: "myapp" }),
-      });
-
-      if (createdSessionId) {
-        await setActive!({ session: createdSessionId });
-        // ✅ Clerk session is now active
-        navigation.navigate("HomeScreen" as never); // <-- adjust to your navigator
-      }
-    } catch (err) {
-      console.error("OAuth error", err);
-    }
-  }, [startOAuthFlow]);
-
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -58,7 +40,7 @@ export default function LoginScreen() {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1200,
+        duration: 1000,
         useNativeDriver: true,
       }),
       Animated.spring(slideAnim, {
@@ -75,7 +57,7 @@ export default function LoginScreen() {
       }),
     ]).start();
 
-    const pulseAnimation = Animated.loop(
+    const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.05,
@@ -89,10 +71,28 @@ export default function LoginScreen() {
         }),
       ])
     );
-    pulseAnimation.start();
+    pulseLoop.start();
 
-    return () => pulseAnimation.stop();
+    return () => pulseLoop.stop();
   }, []);
+
+  const onPress = useCallback(async () => {
+    try {
+      const redirectUrl = Linking.createURL("/screens/HomeScreen", {
+        scheme: "myapp",
+      });
+      const { createdSessionId, setActive } = await startOAuthFlow({
+        redirectUrl,
+      });
+
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
+        router.replace("/screens/HomeScreen");
+      }
+    } catch (error) {
+      console.error("OAuth error:", error);
+    }
+  }, [startOAuthFlow, router]);
 
   return (
     <View style={styles.container}>
@@ -102,7 +102,7 @@ export default function LoginScreen() {
         backgroundColor="transparent"
       />
 
-      {/* Background Image with Overlay */}
+      {/* Background Image with Gradient Overlay */}
       <View style={styles.imageContainer}>
         <Image
           source={require("../assets/login.png")}
@@ -110,45 +110,36 @@ export default function LoginScreen() {
           resizeMode="cover"
         />
         <LinearGradient
-          colors={["rgba(0,0,0,0.3)", "rgba(0,0,0,0.6)", "rgba(0,0,0,0.8)"]}
-          style={styles.gradientOverlay}
+          colors={["rgba(0,0,0,0.3)", "rgba(0,0,0,0.7)"]}
+          style={StyleSheet.absoluteFill}
         />
       </View>
 
-      {/* Floating Elements */}
-      <View style={styles.floatingElement1} />
-      <View style={styles.floatingElement2} />
-      <View style={styles.floatingElement3} />
-
-      {/* Content Container */}
+      {/* Animated Content */}
       <Animated.View
         style={[
-          styles.contentContainer,
+          styles.content,
           {
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
           },
         ]}
       >
-        {/* Glass Card */}
         <View style={styles.glassCard}>
           <LinearGradient
-            colors={["rgba(255,255,255,0.25)", "rgba(255,255,255,0.15)"]}
+            colors={["rgba(255,255,255,0.2)", "rgba(255,255,255,0.1)"]}
             style={styles.glassGradient}
           >
-            {/* Logo Section */}
+            {/* Logo and Brand */}
             <Animated.View
-              style={[styles.logoSection, { transform: [{ scale: pulseAnim }] }]}
+              style={{
+                alignItems: "center",
+                transform: [{ scale: pulseAnim }],
+              }}
             >
-              <View style={styles.logoContainer}>
-                <LinearGradient
-                  colors={["#667eea", "#764ba2"]}
-                  style={styles.logoBackground}
-                >
-                  <Text style={styles.logoIcon}>🧠</Text>
-                </LinearGradient>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoEmoji}>🧠</Text>
               </View>
-
               <Text style={styles.brandName}>EchoMind</Text>
               <Text style={styles.tagline}>
                 Turning conversations into clarity.
@@ -156,28 +147,26 @@ export default function LoginScreen() {
             </Animated.View>
 
             {/* Features */}
-            <View style={styles.featuresContainer}>
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>✨</Text>
-                <Text style={styles.featureText}>AI-Powered Insights</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>🎯</Text>
-                <Text style={styles.featureText}>Smart Analysis</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>🚀</Text>
-                <Text style={styles.featureText}>Instant Results</Text>
-              </View>
+            <View style={styles.features}>
+              {[
+                { icon: "✨", text: "AI-Powered Insights" },
+                { icon: "🎯", text: "Smart Analysis" },
+                { icon: "🚀", text: "Instant Results" },
+              ].map(({ icon, text }) => (
+                <View key={text} style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>{icon}</Text>
+                  <Text style={styles.featureText}>{text}</Text>
+                </View>
+              ))}
             </View>
 
             {/* CTA Button */}
             <Pressable
-              style={({ pressed }) => [
-                styles.ctaButton,
-                pressed && styles.ctaButtonPressed,
-              ]}
               onPress={onPress}
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed,
+              ]}
             >
               <LinearGradient
                 colors={["#667eea", "#764ba2"]}
@@ -186,14 +175,14 @@ export default function LoginScreen() {
                 style={styles.buttonGradient}
               >
                 <Text style={styles.buttonText}>Get Started</Text>
-                <Text style={styles.buttonIcon}>→</Text>
+                <Text style={styles.buttonArrow}>→</Text>
               </LinearGradient>
             </Pressable>
 
             {/* Bottom Info */}
             <View style={styles.bottomInfo}>
               <Text style={styles.bottomText}>Join thousands of users</Text>
-              <View style={styles.trustIndicators}>
+              <View style={styles.trustRow}>
                 <View style={styles.trustDot} />
                 <View style={styles.trustDot} />
                 <View style={styles.trustDot} />
@@ -203,10 +192,6 @@ export default function LoginScreen() {
           </LinearGradient>
         </View>
       </Animated.View>
-
-      {/* Decorative Elements */}
-      <View style={styles.decorativeCircle1} />
-      <View style={styles.decorativeCircle2} />
     </View>
   );
 }
@@ -226,55 +211,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  gradientOverlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    top: 0,
-  },
-  floatingElement1: {
-    position: "absolute",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(102, 126, 234, 0.2)",
-    top: "15%",
-    right: "10%",
-    shadowColor: "#667eea",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  floatingElement2: {
-    position: "absolute",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(118, 75, 162, 0.3)",
-    top: "25%",
-    left: "5%",
-    shadowColor: "#764ba2",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  floatingElement3: {
-    position: "absolute",
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    top: "35%",
-    right: "25%",
-    shadowColor: "#fff",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  contentContainer: {
+  content: {
     flex: 1,
     justifyContent: "flex-end",
     paddingHorizontal: 20,
@@ -292,28 +229,23 @@ const styles = StyleSheet.create({
   glassGradient: {
     padding: 32,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderColor: "rgba(255,255,255,0.3)",
   },
-  logoSection: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  logoContainer: {
-    marginBottom: 20,
-  },
-  logoBackground: {
+  logoCircle: {
     width: 80,
     height: 80,
     borderRadius: 25,
+    backgroundColor: "#667eea",
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 20,
     shadowColor: "#667eea",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 16,
   },
-  logoIcon: {
+  logoEmoji: {
     fontSize: 36,
   },
   brandName: {
@@ -332,12 +264,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
     lineHeight: 24,
+    marginBottom: 30,
   },
-  featuresContainer: {
+  features: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 40,
-    paddingHorizontal: 10,
   },
   featureItem: {
     alignItems: "center",
@@ -354,7 +286,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
   },
-  ctaButton: {
+  button: {
     borderRadius: 20,
     overflow: "hidden",
     marginBottom: 24,
@@ -364,7 +296,7 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 16,
   },
-  ctaButtonPressed: {
+  buttonPressed: {
     transform: [{ scale: 0.98 }],
   },
   buttonGradient: {
@@ -381,7 +313,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     letterSpacing: 0.5,
   },
-  buttonIcon: {
+  buttonArrow: {
     fontSize: 20,
     color: "white",
     fontWeight: "700",
@@ -395,7 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: "500",
   },
-  trustIndicators: {
+  trustRow: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -411,23 +343,5 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.5)",
     fontWeight: "500",
     marginLeft: 8,
-  },
-  decorativeCircle1: {
-    position: "absolute",
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: "rgba(102, 126, 234, 0.1)",
-    top: -50,
-    left: -50,
-  },
-  decorativeCircle2: {
-    position: "absolute",
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "rgba(118, 75, 162, 0.1)",
-    bottom: -30,
-    right: -30,
   },
 });

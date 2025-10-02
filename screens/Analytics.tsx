@@ -1,12 +1,12 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import { useNavigation } from 'expo-router'
+import { useNavigation } from 'expo-router';
 
-const MeetingScreen = () => {
-  const navigation=useNavigation();
+const Analytics = () => {
+    const navigation=useNavigation();
   return (
     <View className='flex-1'>
-      <Text>MeetingScreen</Text>
+      <Text>Analytics</Text>
          {/* ChatBot */}
             <Pressable
               onPress={()=>navigation.navigate("ChatBot")} // 👈 Navigate to ChatBot screen
@@ -21,6 +21,6 @@ const MeetingScreen = () => {
   )
 }
 
-export default MeetingScreen
+export default Analytics;
 
 const styles = StyleSheet.create({})
