@@ -1,3 +1,4 @@
+
 import { NavigationContainer } from "@react-navigation/native";
 import RootNavigator from "./navigation/RootNavigator";
 import * as WebBrowser from "expo-web-browser";

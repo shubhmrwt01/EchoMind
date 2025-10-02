@@ -89,7 +89,7 @@ export default function NewMeetings() {
         </Text>
       </View>
       {/* Record Now */}
-      <Pressable className="justify-center mx-8 rounded-2xl mt-12 h-20 w-[84%] bg-blue-300">
+      <Pressable onPress={()=>navigation.navigate("Recording")} className="justify-center mx-8 rounded-2xl mt-12 h-20 w-[84%] bg-blue-300">
         <Text className="text-white text-center text-[22px] font-semibold">
           📱 Record Now
         </Text>

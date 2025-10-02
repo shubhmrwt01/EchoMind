@@ -5,64 +5,84 @@ import { supabase } from "../supabaseClient";
 
 export default function PasteTranscript() {
   const [isFocused, setIsFocused] = useState(false);
-  const [pasteText,setPasteText]=useState("");
-  const handleSubmit =async() => {
-    if(!pasteText.trim()){
-      Alert.alert("Error","Please enter text before process");
+  const [pasteText, setPasteText] = useState("");
+
+  const handleSubmit = async () => {
+    if (!pasteText.trim()) {
+      Alert.alert("Error", "Please enter text before processing");
       return;
     }
-    const {error}=await supabase
-    .from("transcript")
-    .insert([{pasteText}]);
-    if(error){
-      Alert.alert("Error ",error.message);
-    }else{
-      Alert.alert("Success","Script saved to Supabase!");
+
+    const { error } = await supabase.from("transcript").insert([{ pasteText }]);
+
+    if (error) {
+      Alert.alert("Error", error.message);
+    } else {
+      Alert.alert("Success", "Transcript saved to Supabase!");
       setPasteText("");
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FCFF]">
-      <View className="px-6 mt-16">
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <ScrollView contentContainerStyle={{ padding: 24 }}>
         {/* Heading */}
-        <Text className="text-[28px] font-extrabold text-center text-gray-900">
+        <Text className="text-3xl font-bold text-center text-gray-900">
           Paste Transcript
         </Text>
-        <Text className="text-[15px] text-gray-500 text-center mt-2">
+        <Text className="text-sm text-gray-500 text-center mt-2">
           Copy & paste your meeting transcript below
         </Text>
 
+        {/* TextInput Card */}
         <View
-          className={`mt-8 rounded-3xl ${
+          className={`mt-8 p-4 rounded-2xl bg-white shadow-lg ${
             isFocused ? "border-2 border-violet-500" : "border border-gray-200"
-          } bg-white shadow-md`}
+          }`}
         >
           <TextInput
-            className="p-4 text-[16px] text-gray-800"
             placeholder="Paste your transcript here..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#A1A1AA"
             multiline
             textAlignVertical="top"
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            style={{ height: 220 }}
-            scrollEnabled={true}
+            style={{ minHeight: 220, fontSize: 16, color: "#111827" }}
             value={pasteText}
             onChangeText={setPasteText}
+            scrollEnabled
           />
         </View>
 
-        {/* Action buttons */}
+        {/* Action Buttons */}
         <View className="flex-row justify-center gap-4 mt-10">
-          <Pressable onPress={handleSubmit} className="bg-violet-600 px-12 py-4 rounded-2xl shadow-md active:opacity-90">
-            <Text className="text-white text-lg font-semibold">Process</Text>
+          <Pressable
+            onPress={handleSubmit}
+            className="flex-1 bg-violet-600 px-6 py-4 rounded-2xl shadow-lg active:scale-95"
+          >
+            <Text className="text-white text-lg font-semibold text-center">
+              Process
+            </Text>
           </Pressable>
-          <Pressable onPress={()=>setPasteText("")} className="bg-white px-12 py-4 border border-gray-200 rounded-2xl shadow-sm active:opacity-70">
-            <Text className="text-gray-400 text-lg font-semibold">Cancel</Text>
+
+          <Pressable
+            onPress={() => setPasteText("")}
+            className="flex-1 bg-white px-6 py-4 border border-gray-300 rounded-2xl shadow-sm active:scale-95"
+          >
+            <Text className="text-gray-500 text-lg font-semibold text-center">
+              Cancel
+            </Text>
           </Pressable>
         </View>
-      </View>
+
+        {/* Optional Tip Section */}
+        <View className="mt-6 bg-violet-50 p-4 rounded-xl shadow-sm">
+          <Text className="text-gray-700 text-sm">
+            Tip: Make sure your transcript is clear and properly formatted for
+            better processing results.
+          </Text>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

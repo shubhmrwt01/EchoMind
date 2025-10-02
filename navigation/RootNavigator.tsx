@@ -8,6 +8,7 @@ import AIChatBot from "../components/AIChatBot";
 import NewMeetings from "../components/NewMeetings";
 import PasteTranscript from "../components/PasteTranscript";
 import HomeScreen from "../screens/HomeScreen";
+import RecordScreen from "../components/RecordScreen";
 
 // 🔐 Token cache setup
 const tokenCache = {
@@ -57,6 +58,7 @@ function Navigator() {
             component={NewMeetings}
           />
           <Stack.Screen name="PasteTranscript" component={PasteTranscript}/>
+          <Stack.Screen name="Recording" component={RecordScreen}/>
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />

@@ -120,7 +120,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="bg-[#F8FCFF] flex-1 ">
       {/* Header */}
-      <View className=" h-28 mx-3 my-3 p-4 border-b-2 border-gray-300 bg-white flex-row justify-between  rounded-2xl overflow-hidden">
+      <View className=" px-6 p-4 border-b-2 border-gray-300 flex-row justify-between  rounded-2xl overflow-hidden">
         <View className="justify-center">
           <Text className="text-[23px] font-bold">{`${greeting}, ${user?.fullName}`}</Text>
           <Text className="text-[16px] text-gray-600">
@@ -132,7 +132,7 @@ export default function HomeScreen() {
           source={{ uri: user?.imageUrl }}
         />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} className="m-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="m-2">
         {/* Analytics */}
         <View className="flex-row justify-center gap-10  ">
           <View className="bg-white h-40 w-48 justify-center border border-gray-300   rounded-2xl pl-10 ">
